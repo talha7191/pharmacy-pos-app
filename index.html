@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<title>Pharmacare POS</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: #FAFAF9; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; min-height: 100vh; padding-bottom: 40px; color: #0F172A; -webkit-font-smoothing: antialiased; }
+
+  .header { background: #fff; border-bottom: 0.5px solid #EAEAEA; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
+  .header-brand { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 32px; height: 32px; background: #1E3A8A; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 600; letter-spacing: -0.5px; }
+  .header-title { font-size: 14px; font-weight: 600; color: #0F172A; letter-spacing: -0.2px; }
+  .header-sub { font-size: 11px; color: #94A3B8; margin-top: 1px; }
+  .live-badge { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #64748B; cursor: pointer; padding: 6px 12px; border-radius: 20px; background: #F1F5F9; border: 0.5px solid #E2E8F0; }
+  .live-badge.offline { color: #B91C1C; background: #FEF2F2; border-color: #FECACA; }
+  .live-badge.syncing { color: #B45309; background: #FFFBEB; border-color: #FCD34D; }
+  .live-dot { width: 6px; height: 6px; background: #10B981; border-radius: 50%; }
+  .live-dot.offline { background: #B91C1C; }
+  .live-dot.syncing { background: #B45309; }
+  .pending-badge { background: #B45309; color: #fff; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; margin-left: 4px; }
+
+  .tabs { display: flex; gap: 0; padding: 0; }
+  .tab { padding: 14px 16px; font-size: 12px; font-weight: 500; color: #94A3B8; letter-spacing: 0.2px; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.15s; }
+  .tab:hover { color: #475569; }
+  .tab.active { color: #0F172A; border-bottom-color: #1E3A8A; font-weight: 600; }
+
+  .content { padding: 28px 24px; max-width: 720px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 600px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  .kpi-card { background: #fff; border: 0.5px solid #EAEAEA; border-radius: 10px; padding: 14px 16px; }
+  .kpi-label { font-size: 11px; color: #94A3B8; font-weight: 500; }
+  .kpi-value { font-size: 20px; font-weight: 600; color: #0F172A; margin-top: 4px; letter-spacing: -0.5px; }
+  .kpi-value.warn { color: #B45309; }
+  .kpi-value.danger { color: #B91C1C; }
+
+  .card { background: #fff; border: 0.5px solid #EAEAEA; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .card-title { font-size: 15px; font-weight: 600; color: #0F172A; letter-spacing: -0.2px; }
+  .card-sub { font-size: 12px; color: #94A3B8; margin-top: 2px; }
+  .card-meta { font-size: 11px; color: #94A3B8; }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 6px; }
+
+  input[type="text"], input[type="number"], input[type="tel"], input[type="date"], select, textarea {
+    width: 100%; background: #FAFAF9; border: 0.5px solid #EAEAEA; border-radius: 8px;
+    padding: 10px 12px; color: #0F172A; font-size: 13px; font-family: inherit;
+    outline: none; transition: border-color 0.15s, background 0.15s; -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #1E3A8A; background: #fff; }
+  input::placeholder { color: #94A3B8; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .two-col .field, .three-col .field { margin-bottom: 0; }
+
+  .search-wrap { position: relative; }
+  .search-input { padding-left: 36px !important; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+  .dropdown-list { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 0.5px solid #EAEAEA; border-radius: 8px; z-index: 300; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
+  .dropdown-list.open { display: block; }
+  .dropdown-item { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 0.5px solid #F1F5F9; transition: background 0.1s; }
+  .dropdown-item:last-child { border-bottom: none; }
+  .dropdown-item:hover { background: #F8FAFC; }
+  .dropdown-item-meta { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+  .dropdown-item.no-match { color: #94A3B8; cursor: default; font-style: italic; }
+
+  .item-row { border-top: 0.5px solid #EAEAEA; padding: 16px 0; }
+  .item-row:first-of-type { border-top: none; padding-top: 0; }
+  .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .item-name { font-size: 14px; font-weight: 600; color: #0F172A; letter-spacing: -0.1px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .item-meta { font-size: 11px; color: #94A3B8; margin-top: 3px; }
+  .item-price { font-size: 14px; font-weight: 600; color: #0F172A; letter-spacing: -0.2px; white-space: nowrap; }
+  .item-details { display: flex; gap: 14px; font-size: 11px; color: #64748B; flex-wrap: wrap; align-items: center; }
+  .item-details .sep { color: #E2E8F0; }
+  .item-details .val { color: #0F172A; font-weight: 500; }
+  .item-remove { background: none; border: none; color: #94A3B8; cursor: pointer; padding: 4px 8px; font-size: 11px; font-weight: 500; }
+  .item-remove:hover { color: #B91C1C; }
+
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; letter-spacing: 0.1px; }
+  .badge-warn { color: #B45309; background: #FFFBEB; border: 0.5px solid #FCD34D; }
+  .badge-danger { color: #B91C1C; background: #FEF2F2; border: 0.5px solid #FECACA; }
+  .badge-success { color: #047857; background: #ECFDF5; border: 0.5px solid #A7F3D0; }
+  .badge-info { color: #1E3A8A; background: #EFF6FF; border: 0.5px solid #BFDBFE; }
+
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; margin-top: 16px; border-top: 0.5px solid #EAEAEA; }
+  .total-label { font-size: 12px; color: #94A3B8; font-weight: 500; }
+  .total-value { font-size: 22px; font-weight: 600; color: #0F172A; letter-spacing: -0.5px; }
+
+  .btn { padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; letter-spacing: 0.1px; }
+  .btn-primary { background: #1E3A8A; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #1E40AF; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { background: #fff; color: #475569; border: 0.5px solid #E2E8F0; }
+  .btn-secondary:hover { border-color: #94A3B8; }
+  .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+  .btn-row .btn-primary { flex: 1; }
+  .btn-row .btn-secondary { flex: 0.5; }
+
+  .add-item-btn { width: 100%; padding: 12px; border: 0.5px dashed #CBD5E1; background: #fff; color: #64748B; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 8px; margin-top: 16px; transition: all 0.15s; font-family: inherit; }
+  .add-item-btn:hover { border-color: #1E3A8A; color: #1E3A8A; }
+
+  .billing-toggle { display: flex; gap: 8px; margin-top: 6px; }
+  .billing-btn { flex: 1; padding: 10px; border: 0.5px solid #E2E8F0; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; background: #fff; color: #64748B; transition: all 0.15s; text-align: center; }
+  .billing-btn.active-cash { border-color: #047857; background: #ECFDF5; color: #047857; }
+  .billing-btn.active-credit { border-color: #B91C1C; background: #FEF2F2; color: #B91C1C; }
+  .billing-btn.active-split { border-color: #B45309; background: #FFFBEB; color: #B45309; }
+
+  .balance-box { display: none; background: #FFFBEB; border: 0.5px solid #FCD34D; border-radius: 8px; padding: 12px 14px; margin-top: 8px; }
+  .balance-box.show { display: block; }
+  .balance-box.zero { background: #ECFDF5; border-color: #A7F3D0; }
+  .balance-box-label { font-size: 11px; color: #B45309; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .balance-box.zero .balance-box-label { color: #047857; }
+  .balance-box-amount { font-size: 18px; font-weight: 600; color: #B45309; margin-top: 2px; letter-spacing: -0.3px; }
+  .balance-box.zero .balance-box-amount { color: #047857; }
+
+  .collapsible-trigger { width: 100%; background: #fff; border: 0.5px solid #EAEAEA; border-radius: 10px; padding: 14px 16px; color: #475569; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .collapsible-trigger:hover { border-color: #94A3B8; }
+  .chevron { transition: transform 0.2s; font-size: 11px; color: #94A3B8; }
+  .collapsible-trigger.open .chevron { transform: rotate(180deg); }
+  .collapsible-trigger.open { border-radius: 10px 10px 0 0; border-bottom-color: transparent; margin-bottom: 0; }
+  .collapsible-body { display: none; background: #FAFAF9; border: 0.5px solid #EAEAEA; border-top: none; border-radius: 0 0 10px 10px; padding: 16px; margin-bottom: 8px; }
+  .collapsible-body.open { display: block; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); color: #fff; border-radius: 8px; padding: 12px 20px; font-size: 13px; font-weight: 500; z-index: 999; transition: transform 0.3s ease; box-shadow: 0 8px 24px rgba(15,23,42,0.15); }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: #047857; }
+  .toast.error { background: #B91C1C; }
+  .toast.warn { background: #B45309; }
+
+  .loading-bar { position: fixed; top: 0; left: 0; height: 2px; background: #1E3A8A; width: 0%; transition: width 0.3s; z-index: 9999; }
+
+  /* Modal */
+  .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 6000; padding: 20px; align-items: center; justify-content: center; }
+  .modal.show { display: flex; }
+  .modal-content { background: #fff; max-width: 400px; width: 100%; border-radius: 12px; padding: 24px; }
+  .modal-icon { font-size: 32px; text-align: center; margin-bottom: 12px; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #0F172A; text-align: center; margin-bottom: 4px; letter-spacing: -0.2px; }
+  .modal-sub { font-size: 12px; color: #94A3B8; text-align: center; margin-bottom: 18px; }
+  .modal-body { background: #FAFAF9; border: 0.5px solid #EAEAEA; border-radius: 10px; padding: 14px; margin-bottom: 18px; font-size: 13px; line-height: 1.7; }
+  .modal-row { display: flex; justify-content: space-between; gap: 12px; }
+  .modal-row .label { color: #94A3B8; }
+  .modal-row .value { color: #0F172A; font-weight: 500; text-align: right; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions .btn { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loadingBar"></div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <div class="logo">Rx</div>
+      <div>
+        <div class="header-title">Pharmacare</div>
+        <div class="header-sub">Pharmacy Management</div>
+      </div>
+    </div>
+    <div class="live-badge" id="status-badge">
+      <div class="live-dot" id="status-dot"></div>
+      <span id="status-text">Online</span>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="sale" onclick="switchTab('sale')">Sale</div>
+    <div class="tab" data-tab="restock" onclick="switchTab('restock')">Restock</div>
+    <div class="tab" data-tab="inventory" onclick="switchTab('inventory')">Inventory</div>
+    <div class="tab" data-tab="payment" onclick="switchTab('payment')">Payments</div>
+    <div class="tab" data-tab="expense" onclick="switchTab('expense')">Expenses</div>
+    <div class="tab" data-tab="masters" onclick="switchTab('masters')">Masters</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- KPI STRIP -->
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Today's Sales</div><div class="kpi-value" id="kpi-sales">PKR 0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Items Sold</div><div class="kpi-value" id="kpi-items">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Low Stock</div><div class="kpi-value warn" id="kpi-lowstock">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Expiring Soon</div><div class="kpi-value danger" id="kpi-expiring">0</div></div>
+  </div>
+
+  <!-- ══ SALE ══ -->
+  <div class="panel active" id="panel-sale">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">New sale</div>
+          <div class="card-sub">Search and add medicines to bill</div>
+        </div>
+        <div class="card-meta" id="bill-num">Bill #—</div>
+      </div>
+
+      <div class="field">
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+          <input type="text" class="search-input" id="sale-medicine-s" placeholder="Search medicine name or batch..." autocomplete="off"
+            oninput="searchMedicines(this.value)" onfocus="showAllMedicines()" onblur="setTimeout(()=>document.getElementById('sale-medicine-dd').classList.remove('open'),300)">
+          <div class="dropdown-list" id="sale-medicine-dd"></div>
+        </div>
+      </div>
+
+      <div id="sale-items"></div>
+
+      <div class="total-row">
+        <div class="total-label">Total amount</div>
+        <div class="total-value" id="sale-total">PKR 0</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="completeSale(false)">Complete sale</button>
+        <button class="btn btn-secondary" onclick="completeSale(true)">Print receipt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RESTOCK ══ -->
+  <div class="panel" id="panel-restock">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">New restock</div>
+          <div class="card-sub">Add new stock from supplier</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Date</label><input type="date" id="re-date"></div>
+        <div class="field"><label>Quantity</label><input type="number" id="re-qty" placeholder="0" min="1" oninput="calcRe()"></div>
+      </div>
+      <div class="field">
+        <label>Medicine</label>
+        <div class="search-wrap">
+          <input type="text" id="re-medicine-s" placeholder="Search medicine..." autocomplete="off"
+            oninput="searchMedicinesRestock(this.value)" onfocus="showAllMedicinesRestock()" onblur="setTimeout(()=>document.getElementById('re-medicine-dd').classList.remove('open'),300)">
+          <div class="dropdown-list" id="re-medicine-dd"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Batch No</label><input type="text" id="re-batch" placeholder="e.g. PXT-2456"></div>
+        <div class="field"><label>Expiry Date</label><input type="date" id="re-expiry"></div>
+      </div>
+      <div class="field"><label>Manufacturer</label><input type="text" id="re-manufacturer" placeholder="GSK, Pfizer, etc."></div>
+      <div class="two-col">
+        <div class="field"><label>Cost Price/Unit (PKR)</label><input type="number" id="re-price" placeholder="0" oninput="calcRe()"></div>
+        <div class="field">
+          <label>Total Cost</label>
+          <input type="text" id="re-total" value="PKR 0" readonly style="background:#F1F5F9;">
+        </div>
+      </div>
+      <div class="field">
+        <label>Supplier</label>
+        <div class="search-wrap">
+          <input type="text" id="re-supplier" placeholder="Search supplier..." autocomplete="off"
+            oninput="searchSuppliers(this.value)" onfocus="showAllSuppliers()" onblur="setTimeout(()=>document.getElementById('re-supplier-dd').classList.remove('open'),300)">
+          <div class="dropdown-list" id="re-supplier-dd"></div>
+        </div>
+        <div class="balance-box" id="supplier-payable-box">
+          <div class="balance-box-label">Currently Owed</div>
+          <div class="balance-box-amount" id="supplier-payable-amount">PKR 0</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Payment Type</label>
+        <div class="billing-toggle">
+          <div class="billing-btn active-cash" id="re-btn-cash" onclick="setRestockPayment('Cash')">Cash</div>
+          <div class="billing-btn" id="re-btn-credit" onclick="setRestockPayment('Credit')">Credit</div>
+          <div class="billing-btn" id="re-btn-split" onclick="setRestockPayment('Split')">Split</div>
+        </div>
+        <div id="re-split-section" style="display:none; margin-top:10px;">
+          <div class="two-col">
+            <div class="field"><label style="color:#047857">Cash Amount</label><input type="number" id="re-split-cash" placeholder="0" oninput="updateReSplitCredit()"></div>
+            <div class="field"><label style="color:#B91C1C">Credit Amount</label><input type="number" id="re-split-credit" placeholder="0" oninput="updateReSplitCash()"></div>
+          </div>
+          <div style="font-size:11px; color:#B45309; margin-top:8px;" id="re-split-info">Cash + Credit should equal Total Cost</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="submitRestock()">Save restock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ INVENTORY ══ -->
+  <div class="panel" id="panel-inventory">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Inventory overview</div>
+          <div class="card-sub">All medicines and stock levels</div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+          <input type="text" class="search-input" id="inv-search" placeholder="Search medicines..." oninput="renderInventory()">
+        </div>
+      </div>
+      <div id="inventory-list" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAYMENT (Supplier) ══ -->
+  <div class="panel" id="panel-payment">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Pay supplier</div>
+          <div class="card-sub">Record a payment to a supplier</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Date</label><input type="date" id="sp-date"></div>
+        <div class="field"><label>Amount Paid (PKR)</label><input type="number" id="sp-amount" placeholder="0" min="1"></div>
+      </div>
+      <div class="field">
+        <label>Supplier</label>
+        <div class="search-wrap">
+          <input type="text" id="sp-name-s" placeholder="Search supplier..." autocomplete="off"
+            oninput="searchSpSuppliers(this.value)" onfocus="showAllSpSuppliers()" onblur="setTimeout(()=>document.getElementById('sp-name-dd').classList.remove('open'),300)">
+          <div class="dropdown-list" id="sp-name-dd"></div>
+        </div>
+        <div class="balance-box" id="sp-balance-box">
+          <div class="balance-box-label">Currently Owed</div>
+          <div class="balance-box-amount" id="sp-balance-amount">PKR 0</div>
+        </div>
+      </div>
+      <div class="field"><label>Notes</label><input type="text" id="sp-notes" placeholder="Optional"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="payToSupplier()">Record payment</button>
+    </div>
+
+    <button class="collapsible-trigger" onclick="toggleCollapse('sob-body',this)">
+      <span>+ Set supplier opening balance</span><span class="chevron">▾</span>
+    </button>
+    <div class="collapsible-body" id="sob-body">
+      <div class="field">
+        <label>Supplier</label>
+        <div class="search-wrap">
+          <input type="text" id="sob-name-s" placeholder="Search supplier..." autocomplete="off"
+            oninput="searchSobSuppliers(this.value)" onfocus="showAllSobSuppliers()" onblur="setTimeout(()=>document.getElementById('sob-name-dd').classList.remove('open'),300)">
+          <div class="dropdown-list" id="sob-name-dd"></div>
+        </div>
+      </div>
+      <div class="field"><label>Opening Balance (PKR)</label><input type="number" id="sob-amount" placeholder="0" min="0"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="saveSupplierOB()">Save opening balance</button>
+    </div>
+  </div>
+
+  <!-- ══ EXPENSE ══ -->
+  <div class="panel" id="panel-expense">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Business expense</div>
+          <div class="card-sub">Track operating expenses</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Date</label><input type="date" id="exp-date"></div>
+        <div class="field"><label>Amount (PKR)</label><input type="number" id="exp-amount" placeholder="0" min="1"></div>
+      </div>
+      <div class="field"><label>Category</label><input type="text" id="exp-category" placeholder="Rent, Salary, Utilities, etc."></div>
+      <div class="field"><label>Notes</label><input type="text" id="exp-notes" placeholder="Optional"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="submitExpense()">Record expense</button>
+    </div>
+  </div>
+
+  <!-- ══ MASTERS ══ -->
+  <div class="panel" id="panel-masters">
+    <button class="collapsible-trigger" onclick="toggleCollapse('nm-body',this)">
+      <span>+ Add new medicine</span><span class="chevron">▾</span>
+    </button>
+    <div class="collapsible-body" id="nm-body">
+      <div class="field"><label>Medicine Name</label><input type="text" id="nm-name" placeholder="e.g. Panadol Extra"></div>
+      <div class="two-col">
+        <div class="field"><label>Dosage</label><input type="text" id="nm-dosage" placeholder="500mg"></div>
+        <div class="field"><label>Manufacturer</label><input type="text" id="nm-manufacturer" placeholder="GSK"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Batch No</label><input type="text" id="nm-batch" placeholder="PXT-2456"></div>
+        <div class="field"><label>Expiry Date</label><input type="date" id="nm-expiry"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Cost Price (PKR)</label><input type="number" id="nm-cost" placeholder="0"></div>
+        <div class="field"><label>Selling Price (PKR)</label><input type="number" id="nm-selling" placeholder="0"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="saveMedicine()">Save medicine</button>
+    </div>
+
+    <button class="collapsible-trigger" onclick="toggleCollapse('ns-body',this)">
+      <span>+ Add new supplier</span><span class="chevron">▾</span>
+    </button>
+    <div class="collapsible-body" id="ns-body">
+      <div class="field"><label>Supplier Name</label><input type="text" id="ns-name" placeholder="Supplier name"></div>
+      <div class="two-col">
+        <div class="field"><label>Contact Person</label><input type="text" id="ns-contact" placeholder="Optional"></div>
+        <div class="field"><label>City</label><input type="text" id="ns-city" placeholder="Optional"></div>
+      </div>
+      <div class="field"><label>Phone Number</label><input type="tel" id="ns-phone" placeholder="03XXXXXXXXX" inputmode="numeric"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="saveSupplier()">Save supplier</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal" id="confirm-modal">
+  <div class="modal-content">
+    <div class="modal-title" id="confirm-title">Confirm</div>
+    <div class="modal-sub">Please review the details</div>
+    <div class="modal-body" id="confirm-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="hideConfirm(false)">Cancel</button>
+      <button class="btn btn-primary" id="confirm-yes-btn" onclick="hideConfirm(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const URL = "REPLACE_WITH_YOUR_APPS_SCRIPT_URL";
+
+let medicines = [], suppliers = [], stockMap = {}, supplierPayableMap = {};
+let saleItems = [];
+let restockPaymentType = 'Cash';
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  const t = new Date().toISOString().split('T')[0];
+  ['re-date','sp-date','exp-date'].forEach(id => { const el = document.getElementById(id); if(el) el.value = t; });
+  document.getElementById('bill-num').textContent = 'Bill #' + Date.now().toString().slice(-6);
+  fetchData();
+});
+
+async function fetchData() {
+  if (!navigator.onLine) { setStatus('offline'); return; }
+  try {
+    const r = await fetch(URL + '?t=' + Date.now());
+    const d = await r.json();
+    medicines = d.medicines || [];
+    suppliers = d.suppliers || [];
+    stockMap = d.stockMap || {};
+    supplierPayableMap = d.supplierPayableMap || {};
+    setStatus('online');
+    updateKPIs();
+  } catch(e) { setStatus('offline'); console.warn(e); }
+}
+
+function setStatus(state) {
+  const badge = document.getElementById('status-badge');
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  badge.className = 'live-badge' + (state === 'offline' ? ' offline' : '');
+  dot.className = 'live-dot' + (state === 'offline' ? ' offline' : '');
+  text.textContent = state === 'offline' ? 'Offline' : 'Online';
+}
+
+function updateKPIs() {
+  // KPIs are mocked from local data; later can fetch from backend
+  let lowStock = 0, expiring = 0;
+  const now = new Date();
+  const sixtyDaysAhead = new Date(now.getTime() + 60*24*3600*1000);
+  Object.values(stockMap).forEach(s => {
+    if (s.currentStock !== '' && s.currentStock < 10 && s.currentStock > 0) lowStock++;
+    if (s.expiry) {
+      const exp = new Date(s.expiry);
+      if (exp < sixtyDaysAhead && exp > now) expiring++;
+    }
+  });
+  document.getElementById('kpi-lowstock').textContent = lowStock;
+  document.getElementById('kpi-expiring').textContent = expiring;
+}
+
+// ── TABS ──
+function switchTab(name) {
+  ['sale','restock','inventory','payment','expense','masters'].forEach(t => {
+    document.getElementById('panel-'+t).classList.remove('active');
+    document.querySelector('.tab[data-tab="'+t+'"]').classList.remove('active');
+  });
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelector('.tab[data-tab="'+name+'"]').classList.add('active');
+  if (name === 'inventory') renderInventory();
+}
+
+// ── DROPDOWNS ──
+function searchMedicines(q) { renderMedicineDropdown('sale-medicine-dd', q, addToSale); }
+function showAllMedicines() { renderMedicineDropdown('sale-medicine-dd', '', addToSale); }
+function searchMedicinesRestock(q) { renderMedicineDropdown('re-medicine-dd', q, fillRestock); }
+function showAllMedicinesRestock() { renderMedicineDropdown('re-medicine-dd', '', fillRestock); }
+
+function renderMedicineDropdown(ddId, query, onPick) {
+  const dd = document.getElementById(ddId);
+  dd.classList.add('open');
+  const q = (query || '').toLowerCase();
+  let list = q ? medicines.filter(m => m.name.toLowerCase().includes(q) || (m.batch||'').toLowerCase().includes(q)) : medicines.slice(0, 15);
+  if (!list.length) { dd.innerHTML = '<div class="dropdown-item no-match">No matches</div>'; return; }
+  dd.innerHTML = '';
+  list.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'dropdown-item';
+    div.innerHTML = '<div style="font-weight:600">' + m.name + ' ' + (m.dosage||'') + '</div>' +
+      '<div class="dropdown-item-meta">' + (m.batch ? 'Batch ' + m.batch + ' · ' : '') + (m.expiry ? 'Expiry ' + m.expiry + ' · ' : '') + (m.manufacturer || '') + '</div>';
+    const handler = (e) => { e.preventDefault(); onPick(m); dd.classList.remove('open'); };
+    div.addEventListener('mousedown', handler);
+    div.addEventListener('touchstart', handler, { passive: false });
+    dd.appendChild(div);
+  });
+}
+
+function searchSuppliers(q) { renderSupplierDropdown('re-supplier-dd', q, 're-supplier', val => { document.getElementById('re-supplier').value = val; showSupplierPayable(val); }); }
+function showAllSuppliers() { renderSupplierDropdown('re-supplier-dd', '', 're-supplier', val => { document.getElementById('re-supplier').value = val; showSupplierPayable(val); }); }
+function searchSpSuppliers(q) { renderSupplierDropdown('sp-name-dd', q, 'sp-name-s', val => { document.getElementById('sp-name-s').value = val; showSpBalance(val); }); }
+function showAllSpSuppliers() { renderSupplierDropdown('sp-name-dd', '', 'sp-name-s', val => { document.getElementById('sp-name-s').value = val; showSpBalance(val); }); }
+function searchSobSuppliers(q) { renderSupplierDropdown('sob-name-dd', q, 'sob-name-s', val => document.getElementById('sob-name-s').value = val); }
+function showAllSobSuppliers() { renderSupplierDropdown('sob-name-dd', '', 'sob-name-s', val => document.getElementById('sob-name-s').value = val); }
+
+function renderSupplierDropdown(ddId, query, inId, onPick) {
+  const dd = document.getElementById(ddId);
+  dd.classList.add('open');
+  const q = (query || '').toLowerCase();
+  let list = q ? suppliers.filter(s => s.toLowerCase().includes(q)) : [...suppliers].sort().slice(0, 15);
+  if (!list.length) { dd.innerHTML = '<div class="dropdown-item no-match">No suppliers found</div>'; return; }
+  dd.innerHTML = '';
+  list.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'dropdown-item';
+    div.textContent = s;
+    const handler = (e) => { e.preventDefault(); onPick(s); dd.classList.remove('open'); };
+    div.addEventListener('mousedown', handler);
+    div.addEventListener('touchstart', handler, { passive: false });
+    dd.appendChild(div);
+  });
+}
+
+// ── SALE ──
+function addToSale(med) {
+  document.getElementById('sale-medicine-s').value = '';
+  saleItems.push({
+    name: med.name + (med.dosage ? ' ' + med.dosage : ''),
+    batch: med.batch || '',
+    expiry: med.expiry || '',
+    manufacturer: med.manufacturer || '',
+    qty: 1,
+    price: med.sellingPrice || 0,
+    discount: 0
+  });
+  renderSaleItems();
+}
+
+function removeSaleItem(idx) { saleItems.splice(idx, 1); renderSaleItems(); }
+
+function updateSaleItem(idx, field, val) {
+  if (field === 'qty' || field === 'price' || field === 'discount') {
+    saleItems[idx][field] = parseFloat(val) || 0;
+  }
+  calcSaleTotal();
+}
+
+function renderSaleItems() {
+  const list = document.getElementById('sale-items');
+  if (!saleItems.length) { list.innerHTML = '<div style="text-align:center; color:#94A3B8; font-size:13px; padding:24px 0;">No items added yet</div>'; calcSaleTotal(); return; }
+  list.innerHTML = '';
+  saleItems.forEach((item, idx) => {
+    const itemTotal = (item.qty * item.price) - item.discount;
+    let badgeHtml = '';
+    if (item.expiry) {
+      const days = Math.floor((new Date(item.expiry) - new Date()) / (24*3600*1000));
+      if (days <= 60 && days > 0) badgeHtml = '<span class="badge badge-danger">Expires in ' + days + ' days</span>';
+      else if (days <= 0) badgeHtml = '<span class="badge badge-danger">Expired</span>';
+    }
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML =
+      '<div class="item-header">' +
+        '<div>' +
+          '<div class="item-name">' + item.name + ' ' + badgeHtml + '</div>' +
+          '<div class="item-meta">' + (item.batch ? 'Batch ' + item.batch + ' · ' : '') + (item.expiry ? 'Expiry ' + item.expiry + ' · ' : '') + (item.manufacturer || '') + '</div>' +
+        '</div>' +
+        '<div class="item-price">PKR ' + itemTotal.toLocaleString() + '</div>' +
+      '</div>' +
+      '<div class="item-details">' +
+        '<span>Qty <input type="number" min="1" value="' + item.qty + '" onchange="updateSaleItem(' + idx + ',\'qty\',this.value)" style="width:50px; padding:2px 6px; font-size:11px; border:0.5px solid #E2E8F0; border-radius:4px;"></span>' +
+        '<span class="sep">·</span>' +
+        '<span>Price <input type="number" value="' + item.price + '" onchange="updateSaleItem(' + idx + ',\'price\',this.value)" style="width:60px; padding:2px 6px; font-size:11px; border:0.5px solid #E2E8F0; border-radius:4px;"></span>' +
+        '<span class="sep">·</span>' +
+        '<span>Discount <input type="number" value="' + item.discount + '" onchange="updateSaleItem(' + idx + ',\'discount\',this.value)" style="width:50px; padding:2px 6px; font-size:11px; border:0.5px solid #E2E8F0; border-radius:4px;"></span>' +
+        '<button class="item-remove" onclick="removeSaleItem(' + idx + ')">Remove</button>' +
+      '</div>';
+    list.appendChild(row);
+  });
+  calcSaleTotal();
+}
+
+function calcSaleTotal() {
+  const total = saleItems.reduce((s, i) => s + (i.qty * i.price - i.discount), 0);
+  document.getElementById('sale-total').textContent = 'PKR ' + total.toLocaleString();
+}
+
+async function completeSale(shouldPrint) {
+  if (!saleItems.length) { toastMsg('Add at least one item','error'); return; }
+  const total = saleItems.reduce((s, i) => s + (i.qty * i.price - i.discount), 0);
+  let body = '<div class="modal-row"><span class="label">Items</span><span class="value">' + saleItems.length + '</span></div>' +
+    '<div class="modal-row"><span class="label">Total</span><span class="value">PKR ' + total.toLocaleString() + '</span></div>';
+  const ok = await askConfirm({ title: 'Confirm sale', body: body, confirmText: shouldPrint ? 'Submit & print' : 'Confirm sale' });
+  if (!ok) return;
+  sLoad();
+  try {
+    await post({ type: 'sale', date: new Date().toISOString().split('T')[0], items: saleItems });
+    toastMsg('Sale recorded! Total PKR ' + total.toLocaleString());
+    if (shouldPrint) setTimeout(() => window.print(), 300);
+    saleItems = []; renderSaleItems();
+    document.getElementById('bill-num').textContent = 'Bill #' + Date.now().toString().slice(-6);
+    fetchData();
+  } catch(e) { toastMsg('Error. Check internet','error'); }
+  eLoad();
+}
+
+// ── RESTOCK ──
+function fillRestock(med) {
+  document.getElementById('re-medicine-s').value = med.name + (med.dosage ? ' ' + med.dosage : '');
+  if (med.batch) document.getElementById('re-batch').value = med.batch;
+  if (med.expiry) document.getElementById('re-expiry').value = med.expiry;
+  if (med.manufacturer) document.getElementById('re-manufacturer').value = med.manufacturer;
+  if (med.costPrice) { document.getElementById('re-price').value = med.costPrice; calcRe(); }
+}
+
+function calcRe() {
+  const q = parseFloat(document.getElementById('re-qty').value) || 0;
+  const p = parseFloat(document.getElementById('re-price').value) || 0;
+  document.getElementById('re-total').value = 'PKR ' + (q * p).toLocaleString();
+  if (restockPaymentType === 'Split') {
+    const cash = parseFloat(document.getElementById('re-split-cash').value) || 0;
+    document.getElementById('re-split-credit').value = Math.max(0, q*p - cash);
+    updateReSplitInfo();
+  }
+}
+
+function setRestockPayment(type) {
+  restockPaymentType = type;
+  ['re-btn-cash','re-btn-credit','re-btn-split'].forEach(id => document.getElementById(id).className = 'billing-btn');
+  if (type === 'Cash') document.getElementById('re-btn-cash').className = 'billing-btn active-cash';
+  else if (type === 'Credit') document.getElementById('re-btn-credit').className = 'billing-btn active-credit';
+  else if (type === 'Split') document.getElementById('re-btn-split').className = 'billing-btn active-split';
+  document.getElementById('re-split-section').style.display = type === 'Split' ? 'block' : 'none';
+  if (type === 'Split') { document.getElementById('re-split-cash').value=''; document.getElementById('re-split-credit').value=''; }
+}
+
+function updateReSplitCredit() {
+  const q = parseFloat(document.getElementById('re-qty').value) || 0;
+  const p = parseFloat(document.getElementById('re-price').value) || 0;
+  const cash = parseFloat(document.getElementById('re-split-cash').value) || 0;
+  document.getElementById('re-split-credit').value = Math.max(0, q*p - cash);
+  updateReSplitInfo();
+}
+function updateReSplitCash() {
+  const q = parseFloat(document.getElementById('re-qty').value) || 0;
+  const p = parseFloat(document.getElementById('re-price').value) || 0;
+  const credit = parseFloat(document.getElementById('re-split-credit').value) || 0;
+  document.getElementById('re-split-cash').value = Math.max(0, q*p - credit);
+  updateReSplitInfo();
+}
+function updateReSplitInfo() {
+  const q = parseFloat(document.getElementById('re-qty').value) || 0;
+  const p = parseFloat(document.getElementById('re-price').value) || 0;
+  const total = q * p;
+  const cash = parseFloat(document.getElementById('re-split-cash').value) || 0;
+  const credit = parseFloat(document.getElementById('re-split-credit').value) || 0;
+  const info = document.getElementById('re-split-info');
+  if (Math.abs((cash+credit) - total) < 0.01) { info.style.color = '#047857'; info.textContent = 'Cash + Credit matches total'; }
+  else { info.style.color = '#B91C1C'; info.textContent = 'Cash + Credit = ' + (cash+credit).toLocaleString() + ' but total is ' + total.toLocaleString(); }
+}
+
+function showSupplierPayable(name) {
+  const box = document.getElementById('supplier-payable-box');
+  const amt = document.getElementById('supplier-payable-amount');
+  if (!name) { box.classList.remove('show'); return; }
+  const val = Math.max(0, parseFloat(supplierPayableMap[name]) || 0);
+  amt.textContent = 'PKR ' + val.toLocaleString();
+  box.classList.add('show');
+  if (val === 0) box.classList.add('zero'); else box.classList.remove('zero');
+}
+
+function showSpBalance(name) {
+  const box = document.getElementById('sp-balance-box');
+  const amt = document.getElementById('sp-balance-amount');
+  if (!name) { box.classList.remove('show'); return; }
+  const val = Math.max(0, parseFloat(supplierPayableMap[name]) || 0);
+  amt.textContent = 'PKR ' + val.toLocaleString();
+  box.classList.add('show');
+  if (val === 0) box.classList.add('zero'); else box.classList.remove('zero');
+}
+
+async function submitRestock() {
+  const date = document.getElementById('re-date').value;
+  const medicine = document.getElementById('re-medicine-s').value.trim();
+  const batch = document.getElementById('re-batch').value.trim();
+  const expiry = document.getElementById('re-expiry').value;
+  const manufacturer = document.getElementById('re-manufacturer').value.trim();
+  const qty = parseFloat(document.getElementById('re-qty').value);
+  const price = parseFloat(document.getElementById('re-price').value);
+  const supplier = document.getElementById('re-supplier').value.trim();
+  if (!date || !medicine || !qty || isNaN(price)) { toastMsg('Fill all required fields','error'); return; }
+  const total = qty * price;
+  let splitCash = 0, splitCredit = 0;
+  if (restockPaymentType === 'Split') {
+    splitCash = parseFloat(document.getElementById('re-split-cash').value) || 0;
+    splitCredit = parseFloat(document.getElementById('re-split-credit').value) || 0;
+    if (Math.abs((splitCash+splitCredit) - total) > 0.01) { toastMsg('Cash + Credit must equal total','error'); return; }
+  }
+  let body = '<div class="modal-row"><span class="label">Medicine</span><span class="value">' + medicine + '</span></div>' +
+    '<div class="modal-row"><span class="label">Quantity</span><span class="value">' + qty + '</span></div>' +
+    '<div class="modal-row"><span class="label">Total Cost</span><span class="value">PKR ' + total.toLocaleString() + '</span></div>' +
+    '<div class="modal-row"><span class="label">Supplier</span><span class="value">' + (supplier || '—') + '</span></div>' +
+    '<div class="modal-row"><span class="label">Payment</span><span class="value">' + restockPaymentType + '</span></div>';
+  const ok = await askConfirm({ title: 'Confirm restock', body: body });
+  if (!ok) return;
+  sLoad();
+  try {
+    await post({ type:'restock', date, medicine, batch, expiry, manufacturer, qty, price, supplier, paymentType: restockPaymentType, splitCash, splitCredit });
+    toastMsg('Restock saved!');
+    ['re-medicine-s','re-batch','re-expiry','re-manufacturer','re-qty','re-price','re-supplier','re-split-cash','re-split-credit'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('re-total').value = 'PKR 0';
+    setRestockPayment('Cash');
+    fetchData();
+  } catch(e) { toastMsg('Error. Check internet','error'); }
+  eLoad();
+}
+
+// ── INVENTORY ──
+function renderInventory() {
+  const q = (document.getElementById('inv-search').value || '').toLowerCase();
+  const list = document.getElementById('inventory-list');
+  let filtered = medicines.filter(m => m.name.toLowerCase().includes(q));
+  if (!filtered.length) { list.innerHTML = '<div style="text-align:center; color:#94A3B8; font-size:13px; padding:24px 0;">No medicines found</div>'; return; }
+  list.innerHTML = '';
+  filtered.forEach(m => {
+    let badgeHtml = '';
+    if (m.expiry) {
+      const days = Math.floor((new Date(m.expiry) - new Date()) / (24*3600*1000));
+      if (days <= 0) badgeHtml = '<span class="badge badge-danger">Expired</span>';
+      else if (days <= 60) badgeHtml = '<span class="badge badge-danger">Expires in ' + days + ' days</span>';
+      else if (days <= 180) badgeHtml = '<span class="badge badge-warn">Expires in ' + days + ' days</span>';
+      else badgeHtml = '<span class="badge badge-success">Fresh</span>';
+    }
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML =
+      '<div class="item-header">' +
+        '<div>' +
+          '<div class="item-name">' + m.name + ' ' + (m.dosage||'') + ' ' + badgeHtml + '</div>' +
+          '<div class="item-meta">' + (m.batch ? 'Batch ' + m.batch + ' · ' : '') + (m.expiry ? 'Expiry ' + m.expiry + ' · ' : '') + (m.manufacturer || '') + '</div>' +
+        '</div>' +
+        '<div class="item-price">PKR ' + (m.sellingPrice||0).toLocaleString() + '</div>' +
+      '</div>';
+    list.appendChild(row);
+  });
+}
+
+// ── PAYMENT TO SUPPLIER ──
+async function payToSupplier() {
+  const date = document.getElementById('sp-date').value;
+  const supplier = document.getElementById('sp-name-s').value.trim();
+  const amount = parseFloat(document.getElementById('sp-amount').value);
+  const notes = document.getElementById('sp-notes').value.trim();
+  if (!date || !supplier || !amount || amount <= 0) { toastMsg('Fill all fields','error'); return; }
+  let body = '<div class="modal-row"><span class="label">Supplier</span><span class="value">' + supplier + '</span></div>' +
+    '<div class="modal-row"><span class="label">Amount</span><span class="value">PKR ' + amount.toLocaleString() + '</span></div>';
+  const ok = await askConfirm({ title: 'Confirm payment', body });
+  if (!ok) return;
+  sLoad();
+  try {
+    await post({ type:'supplier_payment', date, supplier, amount, notes });
+    toastMsg('Payment recorded');
+    ['sp-name-s','sp-amount','sp-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('sp-balance-box').classList.remove('show');
+    fetchData();
+  } catch(e) { toastMsg('Error. Check internet','error'); }
+  eLoad();
+}
+
+async function saveSupplierOB() {
+  const supplier = document.getElementById('sob-name-s').value.trim();
+  const amount = parseFloat(document.getElementById('sob-amount').value);
+  if (!supplier || isNaN(amount) || amount < 0) { toastMsg('Fill all fields','error'); return; }
+  sLoad();
+  try {
+    await post({ type:'supplier_opening_balance', supplier, amount });
+    toastMsg('Opening balance saved');
+    document.getElementById('sob-name-s').value = '';
+    document.getElementById('sob-amount').value = '';
+    fetchData();
+  } catch(e) { toastMsg('Error. Check internet','error'); }
+  eLoad();
+}
+
+// ── EXPENSE ──
+async function submitExpense() {
+  const date = document.getElementById('exp-date').value;
+  const category = document.getElementById('exp-category').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+  const notes = document.getElementById('exp-notes').value.trim();
+  if (!date || !category || !amount || amount <= 0) { toastMsg('Fill all fields','error'); return; }
+  let body = '<div class="modal-row"><span class="label">Category</span><span class="value">' + category + '</span></div>' +
+    '<div class="modal-row"><span class="label">Amount</span><span class="value">PKR ' + amount.toLocaleString() + '</span></div>';
+  const ok = await askConfirm({ title: 'Confirm expense', body });
+  if (!ok) return;
+  sLoad();
+  try {
+    await post({ type:'expense', date, category, amount, notes });
+    toastMsg('Expense recorded');
+    document.getElementById('exp-category').value = '';
+    document.getElementById('exp-amount').value = '';
+    document.getElementById('exp-notes').value = '';
+  } catch(e) { toastMsg('Error. Check internet','error'); }
+  eLoad();
+}
+
+// ── MASTERS ──
+async function saveMedicine() {
+  const name = document.getElementById('nm-name').value.trim();
+  if (!name) { toastMsg('Medicine name required','error'); return; }
+  const data = {
+    type: 'new_medicine',
+    name,
+    dosage: document.getElementById('nm-dosage').value.trim(),
+    manufacturer: document.getElementById('nm-manufacturer').value.trim(),
+    batch: document.getElementById('nm-batch').value.trim(),
+    expiry: document.getElementById('nm-expiry').value,
+    costPrice: document.getElementById('nm-cost').value,
+    sellingPrice: document.getElementById('nm-selling').value
+  };
+  sLoad();
+  try {
+    await post(data);
+    toastMsg(name + ' added');
+    ['nm-name','nm-dosage','nm-manufacturer','nm-batch','nm-expiry','nm-cost','nm-selling'].forEach(id => document.getElementById(id).value = '');
+    fetchData();
+  } catch(e) { toastMsg('Error. Check internet','error'); }
+  eLoad();
+}
+
+async function saveSupplier() {
+  const name = document.getElementById('ns-name').value.trim();
+  if (!name) { toastMsg('Supplier name required','error'); return; }
+  const data = {
+    type: 'new_supplier',
+    name,
+    contactPerson: document.getElementById('ns-contact').value.trim(),
+    city: document.getElementById('ns-city').value.trim(),
+    phone: document.getElementById('ns-phone').value.trim()
+  };
+  sLoad();
+  try {
+    await post(data);
+    toastMsg(name + ' added');
+    ['ns-name','ns-contact','ns-city','ns-phone'].forEach(id => document.getElementById(id).value = '');
+    fetchData();
+  } catch(e) { toastMsg('Error. Check internet','error'); }
+  eLoad();
+}
+
+// ── HELPERS ──
+function toggleCollapse(id, btn) { document.getElementById(id).classList.toggle('open'); btn.classList.toggle('open'); }
+
+function sLoad() { document.getElementById('loadingBar').style.width = '70%'; }
+function eLoad() { const b = document.getElementById('loadingBar'); b.style.width = '100%'; setTimeout(() => b.style.width = '0%', 400); }
+
+function toastMsg(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+async function post(payload) {
+  const r = await fetch(URL, { method: 'POST', body: JSON.stringify(payload) });
+  return r.json();
+}
+
+let confirmResolve = null;
+function askConfirm(opts) {
+  return new Promise(resolve => {
+    confirmResolve = resolve;
+    document.getElementById('confirm-title').textContent = opts.title || 'Confirm';
+    document.getElementById('confirm-body').innerHTML = opts.body || '';
+    const btn = document.getElementById('confirm-yes-btn');
+    btn.textContent = opts.confirmText || 'Confirm';
+    document.getElementById('confirm-modal').classList.add('show');
+  });
+}
+function hideConfirm(result) {
+  document.getElementById('confirm-modal').classList.remove('show');
+  if (confirmResolve) { confirmResolve(result); confirmResolve = null; }
+}
+
+renderSaleItems(); // empty state
+</script>
+</body>
+</html>

@@ -8,91 +8,98 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { background: #FAFAF9; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; min-height: 100vh; padding-bottom: 40px; color: #0F172A; -webkit-font-smoothing: antialiased; }
 
-  .header { background: #fff; border-bottom: 0.5px solid #EAEAEA; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
-  .header-brand { display: flex; align-items: center; gap: 12px; }
-  .logo { width: 32px; height: 32px; background: #1E3A8A; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 600; letter-spacing: -0.5px; }
+  .header { background: #fff; border-bottom: 0.5px solid #EAEAEA; padding: 0 16px; position: sticky; top: 0; z-index: 100; }
+  @media (min-width: 700px) { .header { padding: 0 24px; } }
+
+  .header-top { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; gap: 8px; }
+  .header-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo { width: 30px; height: 30px; background: #1E3A8A; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; font-weight: 600; flex-shrink: 0; }
   .header-title { font-size: 14px; font-weight: 600; color: #0F172A; letter-spacing: -0.2px; }
   .header-sub { font-size: 11px; color: #94A3B8; margin-top: 1px; }
-  .live-badge { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #64748B; cursor: pointer; padding: 6px 12px; border-radius: 20px; background: #F1F5F9; border: 0.5px solid #E2E8F0; }
+  .live-badge { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #64748B; padding: 5px 10px; border-radius: 20px; background: #F1F5F9; border: 0.5px solid #E2E8F0; flex-shrink: 0; }
   .live-badge.offline { color: #B91C1C; background: #FEF2F2; border-color: #FECACA; }
-  .live-badge.syncing { color: #B45309; background: #FFFBEB; border-color: #FCD34D; }
   .live-dot { width: 6px; height: 6px; background: #10B981; border-radius: 50%; }
   .live-dot.offline { background: #B91C1C; }
-  .live-dot.syncing { background: #B45309; }
-  .pending-badge { background: #B45309; color: #fff; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; margin-left: 4px; }
 
-  .tabs { display: flex; gap: 0; padding: 0; }
-  .tab { padding: 14px 16px; font-size: 12px; font-weight: 500; color: #94A3B8; letter-spacing: 0.2px; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.15s; }
+  /* TABS — MOBILE-FRIENDLY (horizontal scroll) */
+  .tabs { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 0 4px; margin: 0 -4px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 12px 14px; font-size: 12px; font-weight: 500; color: #94A3B8; letter-spacing: 0.2px; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.15s; white-space: nowrap; flex-shrink: 0; }
   .tab:hover { color: #475569; }
   .tab.active { color: #0F172A; border-bottom-color: #1E3A8A; font-weight: 600; }
 
-  .content { padding: 28px 24px; max-width: 720px; margin: 0 auto; }
+  .content { padding: 20px 16px; max-width: 720px; margin: 0 auto; }
+  @media (min-width: 700px) { .content { padding: 28px 24px; } }
+
   .panel { display: none; }
   .panel.active { display: block; }
 
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  @media (max-width: 600px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-  .kpi-card { background: #fff; border: 0.5px solid #EAEAEA; border-radius: 10px; padding: 14px 16px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+  @media (min-width: 700px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; } }
+  .kpi-card { background: #fff; border: 0.5px solid #EAEAEA; border-radius: 10px; padding: 12px 14px; }
   .kpi-label { font-size: 11px; color: #94A3B8; font-weight: 500; }
-  .kpi-value { font-size: 20px; font-weight: 600; color: #0F172A; margin-top: 4px; letter-spacing: -0.5px; }
+  .kpi-value { font-size: 18px; font-weight: 600; color: #0F172A; margin-top: 4px; letter-spacing: -0.5px; }
+  @media (min-width: 700px) { .kpi-value { font-size: 20px; } }
   .kpi-value.warn { color: #B45309; }
   .kpi-value.danger { color: #B91C1C; }
 
-  .card { background: #fff; border: 0.5px solid #EAEAEA; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .card { background: #fff; border: 0.5px solid #EAEAEA; border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+  @media (min-width: 700px) { .card { padding: 24px; margin-bottom: 16px; } }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; gap: 8px; }
   .card-title { font-size: 15px; font-weight: 600; color: #0F172A; letter-spacing: -0.2px; }
   .card-sub { font-size: 12px; color: #94A3B8; margin-top: 2px; }
-  .card-meta { font-size: 11px; color: #94A3B8; }
+  .card-meta { font-size: 11px; color: #94A3B8; flex-shrink: 0; }
 
-  .field { margin-bottom: 16px; }
+  .field { margin-bottom: 14px; }
   .field:last-child { margin-bottom: 0; }
   label { display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 6px; }
 
   input[type="text"], input[type="number"], input[type="tel"], input[type="date"], select, textarea {
     width: 100%; background: #FAFAF9; border: 0.5px solid #EAEAEA; border-radius: 8px;
-    padding: 10px 12px; color: #0F172A; font-size: 13px; font-family: inherit;
+    padding: 10px 12px; color: #0F172A; font-size: 16px; font-family: inherit;
     outline: none; transition: border-color 0.15s, background 0.15s; -webkit-appearance: none;
   }
   input:focus, select:focus, textarea:focus { border-color: #1E3A8A; background: #fff; }
   input::placeholder { color: #94A3B8; }
 
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .two-col .field, .three-col .field { margin-bottom: 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .two-col .field { margin-bottom: 0; }
 
   .search-wrap { position: relative; }
   .search-input { padding-left: 36px !important; }
   .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
   .dropdown-list { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 0.5px solid #EAEAEA; border-radius: 8px; z-index: 300; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
   .dropdown-list.open { display: block; }
-  .dropdown-item { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 0.5px solid #F1F5F9; transition: background 0.1s; }
+  .dropdown-item { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 0.5px solid #F1F5F9; }
   .dropdown-item:last-child { border-bottom: none; }
   .dropdown-item:hover { background: #F8FAFC; }
   .dropdown-item-meta { font-size: 11px; color: #94A3B8; margin-top: 2px; }
   .dropdown-item.no-match { color: #94A3B8; cursor: default; font-style: italic; }
 
-  .item-row { border-top: 0.5px solid #EAEAEA; padding: 16px 0; }
+  .item-row { border-top: 0.5px solid #EAEAEA; padding: 14px 0; }
   .item-row:first-of-type { border-top: none; padding-top: 0; }
-  .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-  .item-name { font-size: 14px; font-weight: 600; color: #0F172A; letter-spacing: -0.1px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 10px; }
+  .item-name { font-size: 13px; font-weight: 600; color: #0F172A; letter-spacing: -0.1px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .item-meta { font-size: 11px; color: #94A3B8; margin-top: 3px; }
   .item-price { font-size: 14px; font-weight: 600; color: #0F172A; letter-spacing: -0.2px; white-space: nowrap; }
-  .item-details { display: flex; gap: 14px; font-size: 11px; color: #64748B; flex-wrap: wrap; align-items: center; }
-  .item-details .sep { color: #E2E8F0; }
-  .item-details .val { color: #0F172A; font-weight: 500; }
-  .item-remove { background: none; border: none; color: #94A3B8; cursor: pointer; padding: 4px 8px; font-size: 11px; font-weight: 500; }
-  .item-remove:hover { color: #B91C1C; }
 
-  .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; letter-spacing: 0.1px; }
+  .item-controls { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 6px; align-items: end; }
+  .item-controls label { font-size: 10px; color: #94A3B8; margin-bottom: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .item-controls input { padding: 6px 8px !important; font-size: 13px !important; }
+  .item-remove { background: #fff; border: 0.5px solid #FECACA; color: #B91C1C; cursor: pointer; padding: 7px 10px; font-size: 11px; font-weight: 500; border-radius: 6px; height: 32px; align-self: end; }
+  .item-remove:hover { background: #FEF2F2; }
+
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; letter-spacing: 0.1px; display: inline-block; }
   .badge-warn { color: #B45309; background: #FFFBEB; border: 0.5px solid #FCD34D; }
   .badge-danger { color: #B91C1C; background: #FEF2F2; border: 0.5px solid #FECACA; }
   .badge-success { color: #047857; background: #ECFDF5; border: 0.5px solid #A7F3D0; }
-  .badge-info { color: #1E3A8A; background: #EFF6FF; border: 0.5px solid #BFDBFE; }
 
-  .total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; margin-top: 16px; border-top: 0.5px solid #EAEAEA; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; margin-top: 14px; border-top: 0.5px solid #EAEAEA; }
   .total-label { font-size: 12px; color: #94A3B8; font-weight: 500; }
   .total-value { font-size: 22px; font-weight: 600; color: #0F172A; letter-spacing: -0.5px; }
+
+  .add-medicine-btn { width: 100%; padding: 11px; border: 0.5px dashed #CBD5E1; background: #fff; color: #1E3A8A; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 8px; margin-top: 14px; transition: all 0.15s; font-family: inherit; }
+  .add-medicine-btn:hover { border-color: #1E3A8A; background: #EFF6FF; }
 
   .btn { padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; letter-spacing: 0.1px; }
   .btn-primary { background: #1E3A8A; color: #fff; }
@@ -102,10 +109,7 @@
   .btn-secondary:hover { border-color: #94A3B8; }
   .btn-row { display: flex; gap: 8px; margin-top: 16px; }
   .btn-row .btn-primary { flex: 1; }
-  .btn-row .btn-secondary { flex: 0.5; }
-
-  .add-item-btn { width: 100%; padding: 12px; border: 0.5px dashed #CBD5E1; background: #fff; color: #64748B; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 8px; margin-top: 16px; transition: all 0.15s; font-family: inherit; }
-  .add-item-btn:hover { border-color: #1E3A8A; color: #1E3A8A; }
+  .btn-row .btn-secondary { flex: 0.6; }
 
   .billing-toggle { display: flex; gap: 8px; margin-top: 6px; }
   .billing-btn { flex: 1; padding: 10px; border: 0.5px solid #E2E8F0; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; background: #fff; color: #64748B; transition: all 0.15s; text-align: center; }
@@ -129,7 +133,7 @@
   .collapsible-body { display: none; background: #FAFAF9; border: 0.5px solid #EAEAEA; border-top: none; border-radius: 0 0 10px 10px; padding: 16px; margin-bottom: 8px; }
   .collapsible-body.open { display: block; }
 
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); color: #fff; border-radius: 8px; padding: 12px 20px; font-size: 13px; font-weight: 500; z-index: 999; transition: transform 0.3s ease; box-shadow: 0 8px 24px rgba(15,23,42,0.15); }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); color: #fff; border-radius: 8px; padding: 12px 20px; font-size: 13px; font-weight: 500; z-index: 999; transition: transform 0.3s ease; box-shadow: 0 8px 24px rgba(15,23,42,0.15); white-space: nowrap; }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.success { background: #047857; }
   .toast.error { background: #B91C1C; }
@@ -137,11 +141,9 @@
 
   .loading-bar { position: fixed; top: 0; left: 0; height: 2px; background: #1E3A8A; width: 0%; transition: width 0.3s; z-index: 9999; }
 
-  /* Modal */
   .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 6000; padding: 20px; align-items: center; justify-content: center; }
   .modal.show { display: flex; }
   .modal-content { background: #fff; max-width: 400px; width: 100%; border-radius: 12px; padding: 24px; }
-  .modal-icon { font-size: 32px; text-align: center; margin-bottom: 12px; }
   .modal-title { font-size: 16px; font-weight: 600; color: #0F172A; text-align: center; margin-bottom: 4px; letter-spacing: -0.2px; }
   .modal-sub { font-size: 12px; color: #94A3B8; text-align: center; margin-bottom: 18px; }
   .modal-body { background: #FAFAF9; border: 0.5px solid #EAEAEA; border-radius: 10px; padding: 14px; margin-bottom: 18px; font-size: 13px; line-height: 1.7; }
@@ -150,6 +152,8 @@
   .modal-row .value { color: #0F172A; font-weight: 500; text-align: right; }
   .modal-actions { display: flex; gap: 10px; }
   .modal-actions .btn { flex: 1; }
+
+  .empty-state { text-align: center; color: #94A3B8; font-size: 13px; padding: 28px 0; }
 </style>
 </head>
 <body>
@@ -182,7 +186,6 @@
 
 <div class="content">
 
-  <!-- KPI STRIP -->
   <div class="kpi-grid">
     <div class="kpi-card"><div class="kpi-label">Today's Sales</div><div class="kpi-value" id="kpi-sales">PKR 0</div></div>
     <div class="kpi-card"><div class="kpi-label">Items Sold</div><div class="kpi-value" id="kpi-items">0</div></div>
@@ -211,6 +214,8 @@
       </div>
 
       <div id="sale-items"></div>
+
+      <button class="add-medicine-btn" onclick="document.getElementById('sale-medicine-s').focus()">+ Add another medicine</button>
 
       <div class="total-row">
         <div class="total-label">Total amount</div>
@@ -309,7 +314,7 @@
     </div>
   </div>
 
-  <!-- ══ PAYMENT (Supplier) ══ -->
+  <!-- ══ PAYMENT ══ -->
   <div class="panel" id="panel-payment">
     <div class="card">
       <div class="card-header">
@@ -412,7 +417,6 @@
 
 </div>
 
-<!-- Confirmation Modal -->
 <div class="modal" id="confirm-modal">
   <div class="modal-content">
     <div class="modal-title" id="confirm-title">Confirm</div>
@@ -429,16 +433,17 @@
 
 <script>
 const URL = "https://script.google.com/macros/s/AKfycbzEXFPAXRRipROUwTXrVLPg-p_BJc4XndhXgZ8Vo4Scu0PFgOt1W-SEW7D-eDzCg1vloA/exec";
+
 let medicines = [], suppliers = [], stockMap = {}, supplierPayableMap = {};
 let saleItems = [];
 let restockPaymentType = 'Cash';
 
-// ── INIT ──
 window.addEventListener('DOMContentLoaded', () => {
   const t = new Date().toISOString().split('T')[0];
   ['re-date','sp-date','exp-date'].forEach(id => { const el = document.getElementById(id); if(el) el.value = t; });
   document.getElementById('bill-num').textContent = 'Bill #' + Date.now().toString().slice(-6);
   fetchData();
+  renderSaleItems();
 });
 
 async function fetchData() {
@@ -465,7 +470,6 @@ function setStatus(state) {
 }
 
 function updateKPIs() {
-  // KPIs are mocked from local data; later can fetch from backend
   let lowStock = 0, expiring = 0;
   const now = new Date();
   const sixtyDaysAhead = new Date(now.getTime() + 60*24*3600*1000);
@@ -480,7 +484,6 @@ function updateKPIs() {
   document.getElementById('kpi-expiring').textContent = expiring;
 }
 
-// ── TABS ──
 function switchTab(name) {
   ['sale','restock','inventory','payment','expense','masters'].forEach(t => {
     document.getElementById('panel-'+t).classList.remove('active');
@@ -491,7 +494,6 @@ function switchTab(name) {
   if (name === 'inventory') renderInventory();
 }
 
-// ── DROPDOWNS ──
 function searchMedicines(q) { renderMedicineDropdown('sale-medicine-dd', q, addToSale); }
 function showAllMedicines() { renderMedicineDropdown('sale-medicine-dd', '', addToSale); }
 function searchMedicinesRestock(q) { renderMedicineDropdown('re-medicine-dd', q, fillRestock); }
@@ -516,14 +518,14 @@ function renderMedicineDropdown(ddId, query, onPick) {
   });
 }
 
-function searchSuppliers(q) { renderSupplierDropdown('re-supplier-dd', q, 're-supplier', val => { document.getElementById('re-supplier').value = val; showSupplierPayable(val); }); }
-function showAllSuppliers() { renderSupplierDropdown('re-supplier-dd', '', 're-supplier', val => { document.getElementById('re-supplier').value = val; showSupplierPayable(val); }); }
-function searchSpSuppliers(q) { renderSupplierDropdown('sp-name-dd', q, 'sp-name-s', val => { document.getElementById('sp-name-s').value = val; showSpBalance(val); }); }
-function showAllSpSuppliers() { renderSupplierDropdown('sp-name-dd', '', 'sp-name-s', val => { document.getElementById('sp-name-s').value = val; showSpBalance(val); }); }
-function searchSobSuppliers(q) { renderSupplierDropdown('sob-name-dd', q, 'sob-name-s', val => document.getElementById('sob-name-s').value = val); }
-function showAllSobSuppliers() { renderSupplierDropdown('sob-name-dd', '', 'sob-name-s', val => document.getElementById('sob-name-s').value = val); }
+function searchSuppliers(q) { renderSupplierDropdown('re-supplier-dd', q, val => { document.getElementById('re-supplier').value = val; showSupplierPayable(val); }); }
+function showAllSuppliers() { renderSupplierDropdown('re-supplier-dd', '', val => { document.getElementById('re-supplier').value = val; showSupplierPayable(val); }); }
+function searchSpSuppliers(q) { renderSupplierDropdown('sp-name-dd', q, val => { document.getElementById('sp-name-s').value = val; showSpBalance(val); }); }
+function showAllSpSuppliers() { renderSupplierDropdown('sp-name-dd', '', val => { document.getElementById('sp-name-s').value = val; showSpBalance(val); }); }
+function searchSobSuppliers(q) { renderSupplierDropdown('sob-name-dd', q, val => document.getElementById('sob-name-s').value = val); }
+function showAllSobSuppliers() { renderSupplierDropdown('sob-name-dd', '', val => document.getElementById('sob-name-s').value = val); }
 
-function renderSupplierDropdown(ddId, query, inId, onPick) {
+function renderSupplierDropdown(ddId, query, onPick) {
   const dd = document.getElementById(ddId);
   dd.classList.add('open');
   const q = (query || '').toLowerCase();
@@ -541,7 +543,7 @@ function renderSupplierDropdown(ddId, query, inId, onPick) {
   });
 }
 
-// ── SALE ──
+// ── SALE (multi-medicine) ──
 function addToSale(med) {
   document.getElementById('sale-medicine-s').value = '';
   saleItems.push({
@@ -554,45 +556,46 @@ function addToSale(med) {
     discount: 0
   });
   renderSaleItems();
+  toastMsg('Added to bill');
 }
 
 function removeSaleItem(idx) { saleItems.splice(idx, 1); renderSaleItems(); }
 
 function updateSaleItem(idx, field, val) {
-  if (field === 'qty' || field === 'price' || field === 'discount') {
-    saleItems[idx][field] = parseFloat(val) || 0;
-  }
-  calcSaleTotal();
+  saleItems[idx][field] = parseFloat(val) || 0;
+  renderSaleItems();
 }
 
 function renderSaleItems() {
   const list = document.getElementById('sale-items');
-  if (!saleItems.length) { list.innerHTML = '<div style="text-align:center; color:#94A3B8; font-size:13px; padding:24px 0;">No items added yet</div>'; calcSaleTotal(); return; }
+  if (!saleItems.length) {
+    list.innerHTML = '<div class="empty-state">Search for a medicine above to start a sale</div>';
+    calcSaleTotal();
+    return;
+  }
   list.innerHTML = '';
   saleItems.forEach((item, idx) => {
     const itemTotal = (item.qty * item.price) - item.discount;
     let badgeHtml = '';
     if (item.expiry) {
       const days = Math.floor((new Date(item.expiry) - new Date()) / (24*3600*1000));
-      if (days <= 60 && days > 0) badgeHtml = '<span class="badge badge-danger">Expires in ' + days + ' days</span>';
-      else if (days <= 0) badgeHtml = '<span class="badge badge-danger">Expired</span>';
+      if (days <= 0) badgeHtml = '<span class="badge badge-danger">Expired</span>';
+      else if (days <= 60) badgeHtml = '<span class="badge badge-danger">Expires in ' + days + 'd</span>';
     }
     const row = document.createElement('div');
     row.className = 'item-row';
     row.innerHTML =
       '<div class="item-header">' +
-        '<div>' +
+        '<div style="flex:1; min-width:0;">' +
           '<div class="item-name">' + item.name + ' ' + badgeHtml + '</div>' +
           '<div class="item-meta">' + (item.batch ? 'Batch ' + item.batch + ' · ' : '') + (item.expiry ? 'Expiry ' + item.expiry + ' · ' : '') + (item.manufacturer || '') + '</div>' +
         '</div>' +
         '<div class="item-price">PKR ' + itemTotal.toLocaleString() + '</div>' +
       '</div>' +
-      '<div class="item-details">' +
-        '<span>Qty <input type="number" min="1" value="' + item.qty + '" onchange="updateSaleItem(' + idx + ',\'qty\',this.value)" style="width:50px; padding:2px 6px; font-size:11px; border:0.5px solid #E2E8F0; border-radius:4px;"></span>' +
-        '<span class="sep">·</span>' +
-        '<span>Price <input type="number" value="' + item.price + '" onchange="updateSaleItem(' + idx + ',\'price\',this.value)" style="width:60px; padding:2px 6px; font-size:11px; border:0.5px solid #E2E8F0; border-radius:4px;"></span>' +
-        '<span class="sep">·</span>' +
-        '<span>Discount <input type="number" value="' + item.discount + '" onchange="updateSaleItem(' + idx + ',\'discount\',this.value)" style="width:50px; padding:2px 6px; font-size:11px; border:0.5px solid #E2E8F0; border-radius:4px;"></span>' +
+      '<div class="item-controls">' +
+        '<div><label>QTY</label><input type="number" min="1" value="' + item.qty + '" onchange="updateSaleItem(' + idx + ',\'qty\',this.value)"></div>' +
+        '<div><label>PRICE</label><input type="number" value="' + item.price + '" onchange="updateSaleItem(' + idx + ',\'price\',this.value)"></div>' +
+        '<div><label>DISCOUNT</label><input type="number" value="' + item.discount + '" onchange="updateSaleItem(' + idx + ',\'discount\',this.value)"></div>' +
         '<button class="item-remove" onclick="removeSaleItem(' + idx + ')">Remove</button>' +
       '</div>';
     list.appendChild(row);
@@ -606,16 +609,22 @@ function calcSaleTotal() {
 }
 
 async function completeSale(shouldPrint) {
-  if (!saleItems.length) { toastMsg('Add at least one item','error'); return; }
+  if (!saleItems.length) { toastMsg('Add at least one medicine','error'); return; }
   const total = saleItems.reduce((s, i) => s + (i.qty * i.price - i.discount), 0);
-  let body = '<div class="modal-row"><span class="label">Items</span><span class="value">' + saleItems.length + '</span></div>' +
-    '<div class="modal-row"><span class="label">Total</span><span class="value">PKR ' + total.toLocaleString() + '</span></div>';
+  if (total <= 0) { toastMsg('Total must be greater than 0','error'); return; }
+
+  let body = '<div class="modal-row"><span class="label">Items</span><span class="value">' + saleItems.length + ' medicine' + (saleItems.length > 1 ? 's' : '') + '</span></div>';
+  saleItems.forEach(it => {
+    body += '<div class="modal-row"><span class="label">' + it.name + '</span><span class="value">Qty ' + it.qty + ' × PKR ' + it.price + '</span></div>';
+  });
+  body += '<div class="modal-row" style="border-top:0.5px solid #EAEAEA; padding-top:8px; margin-top:6px;"><span class="label" style="font-weight:600;">Total</span><span class="value" style="font-size:14px;">PKR ' + total.toLocaleString() + '</span></div>';
+
   const ok = await askConfirm({ title: 'Confirm sale', body: body, confirmText: shouldPrint ? 'Submit & print' : 'Confirm sale' });
   if (!ok) return;
   sLoad();
   try {
     await post({ type: 'sale', date: new Date().toISOString().split('T')[0], items: saleItems });
-    toastMsg('Sale recorded! Total PKR ' + total.toLocaleString());
+    toastMsg('Sale recorded — PKR ' + total.toLocaleString());
     if (shouldPrint) setTimeout(() => window.print(), 300);
     saleItems = []; renderSaleItems();
     document.getElementById('bill-num').textContent = 'Bill #' + Date.now().toString().slice(-6);
@@ -721,12 +730,12 @@ async function submitRestock() {
     '<div class="modal-row"><span class="label">Total Cost</span><span class="value">PKR ' + total.toLocaleString() + '</span></div>' +
     '<div class="modal-row"><span class="label">Supplier</span><span class="value">' + (supplier || '—') + '</span></div>' +
     '<div class="modal-row"><span class="label">Payment</span><span class="value">' + restockPaymentType + '</span></div>';
-  const ok = await askConfirm({ title: 'Confirm restock', body: body });
+  const ok = await askConfirm({ title: 'Confirm restock', body });
   if (!ok) return;
   sLoad();
   try {
     await post({ type:'restock', date, medicine, batch, expiry, manufacturer, qty, price, supplier, paymentType: restockPaymentType, splitCash, splitCredit });
-    toastMsg('Restock saved!');
+    toastMsg('Restock saved');
     ['re-medicine-s','re-batch','re-expiry','re-manufacturer','re-qty','re-price','re-supplier','re-split-cash','re-split-credit'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('re-total').value = 'PKR 0';
     setRestockPayment('Cash');
@@ -735,27 +744,26 @@ async function submitRestock() {
   eLoad();
 }
 
-// ── INVENTORY ──
 function renderInventory() {
   const q = (document.getElementById('inv-search').value || '').toLowerCase();
   const list = document.getElementById('inventory-list');
   let filtered = medicines.filter(m => m.name.toLowerCase().includes(q));
-  if (!filtered.length) { list.innerHTML = '<div style="text-align:center; color:#94A3B8; font-size:13px; padding:24px 0;">No medicines found</div>'; return; }
+  if (!filtered.length) { list.innerHTML = '<div class="empty-state">No medicines found</div>'; return; }
   list.innerHTML = '';
   filtered.forEach(m => {
     let badgeHtml = '';
     if (m.expiry) {
       const days = Math.floor((new Date(m.expiry) - new Date()) / (24*3600*1000));
       if (days <= 0) badgeHtml = '<span class="badge badge-danger">Expired</span>';
-      else if (days <= 60) badgeHtml = '<span class="badge badge-danger">Expires in ' + days + ' days</span>';
-      else if (days <= 180) badgeHtml = '<span class="badge badge-warn">Expires in ' + days + ' days</span>';
+      else if (days <= 60) badgeHtml = '<span class="badge badge-danger">Expires in ' + days + 'd</span>';
+      else if (days <= 180) badgeHtml = '<span class="badge badge-warn">Expires in ' + days + 'd</span>';
       else badgeHtml = '<span class="badge badge-success">Fresh</span>';
     }
     const row = document.createElement('div');
     row.className = 'item-row';
     row.innerHTML =
       '<div class="item-header">' +
-        '<div>' +
+        '<div style="flex:1; min-width:0;">' +
           '<div class="item-name">' + m.name + ' ' + (m.dosage||'') + ' ' + badgeHtml + '</div>' +
           '<div class="item-meta">' + (m.batch ? 'Batch ' + m.batch + ' · ' : '') + (m.expiry ? 'Expiry ' + m.expiry + ' · ' : '') + (m.manufacturer || '') + '</div>' +
         '</div>' +
@@ -765,7 +773,6 @@ function renderInventory() {
   });
 }
 
-// ── PAYMENT TO SUPPLIER ──
 async function payToSupplier() {
   const date = document.getElementById('sp-date').value;
   const supplier = document.getElementById('sp-name-s').value.trim();
@@ -802,7 +809,6 @@ async function saveSupplierOB() {
   eLoad();
 }
 
-// ── EXPENSE ──
 async function submitExpense() {
   const date = document.getElementById('exp-date').value;
   const category = document.getElementById('exp-category').value.trim();
@@ -824,7 +830,6 @@ async function submitExpense() {
   eLoad();
 }
 
-// ── MASTERS ──
 async function saveMedicine() {
   const name = document.getElementById('nm-name').value.trim();
   if (!name) { toastMsg('Medicine name required','error'); return; }
@@ -868,7 +873,6 @@ async function saveSupplier() {
   eLoad();
 }
 
-// ── HELPERS ──
 function toggleCollapse(id, btn) { document.getElementById(id).classList.toggle('open'); btn.classList.toggle('open'); }
 
 function sLoad() { document.getElementById('loadingBar').style.width = '70%'; }
@@ -901,8 +905,6 @@ function hideConfirm(result) {
   document.getElementById('confirm-modal').classList.remove('show');
   if (confirmResolve) { confirmResolve(result); confirmResolve = null; }
 }
-
-renderSaleItems(); // empty state
 </script>
 </body>
 </html>
